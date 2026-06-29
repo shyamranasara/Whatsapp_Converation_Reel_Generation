@@ -135,16 +135,7 @@ except Exception:
 # ---------------------------------------------------------------------------
 with st.sidebar:
     st.markdown("## ⚙️ Settings")
-    
-    api_key = st.text_input(
-        "Google API Key",
-        value=GOOGLE_API_KEY_SEC,
-        type="password",
-        placeholder="Enter your Gemini API key",
-        help="Get your API key from https://aistudio.google.com/apikey",
-    )
-    
-    st.divider()
+
     
     theme = st.radio(
         "Theme",
