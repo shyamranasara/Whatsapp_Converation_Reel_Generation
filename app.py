@@ -124,11 +124,7 @@ cleanup_old_videos()
 # Load API key from env as default
 from config import GOOGLE_API_KEY
 GOOGLE_API_KEY_SEC = GOOGLE_API_KEY
-try:
-    if "GOOGLE_API_KEY" in st.secrets:
-        GOOGLE_API_KEY_SEC = st.secrets["GOOGLE_API_KEY"]
-except Exception:
-    pass
+api_key = GOOGLE_API_KEY_SEC
 
 # ---------------------------------------------------------------------------
 # Sidebar — Settings
@@ -339,9 +335,6 @@ with gen_col:
     )
 
 if generate_clicked:
-    if not api_key:
-        st.error("⚠️ Please enter your Google API Key in the sidebar.")
-        st.stop()
     
     if not topic:
         st.error("⚠️ Please enter a topic for the conversation.")
@@ -354,7 +347,7 @@ if generate_clicked:
         # Step 1: Initialize
         status.info("🔧 Setting up pipeline...")
         progress.progress(10, text="Initializing...")
-        pipeline = ReelPipeline(api_key=api_key)
+        pipeline = ReelPipeline(api_key=GOOGLE_API_KEY_SEC)
         
         # Step 2: Generate conversation
         status.info("🤖 Generating conversation with Gemini AI...")
