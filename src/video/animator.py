@@ -8,7 +8,7 @@ with correct per-frame durations from the conversation delays.
 import logging
 from pathlib import Path
 from typing import Dict, List, Optional
-
+from moviepy import ImageClip, concatenate_videoclips, AudioFileClip
 import numpy as np
 from PIL import Image
 
@@ -41,7 +41,7 @@ class VideoAnimator:
         Returns:
             The output file path.
         """
-        from moviepy import ImageClip, concatenate_videoclips, AudioFileClip
+        
 
         # Calculate per-frame durations
         durations = self._calculate_frame_durations(
