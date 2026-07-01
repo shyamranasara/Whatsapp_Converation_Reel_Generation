@@ -66,11 +66,15 @@ class AudioMixer:
             return None
 
         try:
-            from moviepy import (
+            from src.video.moviepy_compat import (
                 AudioFileClip,
                 CompositeAudioClip,
+                AudioClip,
+                subclip,
+                with_start,
+                with_volume_scaled,
+                with_fps,
             )
-            from moviepy.audio.AudioClip import AudioClip
             import numpy as np
 
             clips = []
@@ -81,11 +85,11 @@ class AudioMixer:
                     notif = AudioFileClip(str(self.notification_path))
                     # Trim to max 1 second
                     if notif.duration > 1.0:
-                        notif = notif.subclipped(0, 1.0)
+                        notif = subclip(notif, 0, 1.0)
                     # Set start time to first message
-                    notif = notif.with_start(message_times[0])
+                    notif = with_start(notif, message_times[0])
                     # Lower volume
-                    notif = notif.with_volume_scaled(0.5)
+                    notif = with_volume_scaled(notif, 0.5)
                     clips.append(notif)
                 except Exception as e:
                     logger.warning(f"Failed to load notification sound: {e}")
@@ -95,14 +99,14 @@ class AudioMixer:
                 try:
                     typing_clip = AudioFileClip(str(self.typing_path))
                     if typing_clip.duration > 0.8:
-                        typing_clip = typing_clip.subclipped(0, 0.8)
-                    typing_clip = typing_clip.with_volume_scaled(0.3)
+                        typing_clip = subclip(typing_clip, 0, 0.8)
+                    typing_clip = with_volume_scaled(typing_clip, 0.3)
 
                     # Add at every 3rd message transition
                     for i in range(2, len(message_times), 3):
                         tc = typing_clip.copy()
                         start = max(0, message_times[i] - 0.5)
-                        tc = tc.with_start(start)
+                        tc = with_start(tc, start)
                         clips.append(tc)
                 except Exception as e:
                     logger.warning(f"Failed to load typing sound: {e}")
@@ -116,7 +120,7 @@ class AudioMixer:
                 duration=total_duration,
                 fps=44100,
             )
-            silence = silence.with_fps(44100)
+            silence = with_fps(silence, 44100)
 
             clips.insert(0, silence)
             mixed = CompositeAudioClip(clips)

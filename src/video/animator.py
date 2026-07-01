@@ -8,7 +8,7 @@ with correct per-frame durations from the conversation delays.
 import logging
 from pathlib import Path
 from typing import Dict, List, Optional
-from moviepy import ImageClip, concatenate_videoclips, AudioFileClip
+from src.video.moviepy_compat import ImageClip, concatenate_videoclips, AudioFileClip, subclip, with_audio
 import numpy as np
 from PIL import Image
 
@@ -74,8 +74,8 @@ class VideoAnimator:
                 audio = AudioFileClip(audio_path)
                 # Trim audio to match video duration
                 if audio.duration > video.duration:
-                    audio = audio.subclipped(0, video.duration)
-                video = video.with_audio(audio)
+                    audio = subclip(audio, 0, video.duration)
+                video = with_audio(video, audio)
                 logger.info(f"Added audio from {audio_path}")
             except Exception as e:
                 logger.warning(f"Failed to add audio: {e}. Continuing without audio.")
