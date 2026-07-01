@@ -211,6 +211,9 @@ class ReelPipeline:
             preset_base=preset_name,
             custom_traits=custom_traits,
             personality_description=desc,
+            avatar_color=config.get("avatar_color"),
+            typing_speed_ms=config.get("typing_speed_ms"),
+            emoji_frequency=config.get("emoji_frequency"),
         )
         return p
 

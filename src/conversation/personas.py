@@ -7,6 +7,9 @@ the AI generates dialogue and how the renderer styles messages.
 
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple
+import json
+from pathlib import Path
+from config import BASE_DIR
 
 
 @dataclass
@@ -106,6 +109,68 @@ PERSONA_PRESETS: Dict[str, Persona] = {
     ),
 }
 
+CUSTOM_PERSONAS_FILE = BASE_DIR / "custom_personas.json"
+
+def load_custom_personas() -> Dict[str, Persona]:
+    """Load custom personas from custom_personas.json."""
+    custom = {}
+    if CUSTOM_PERSONAS_FILE.exists():
+        try:
+            with open(CUSTOM_PERSONAS_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                for key, val in data.items():
+                    custom[key] = Persona(
+                        name=val["name"],
+                        avatar_color=tuple(val["avatar_color"]),
+                        side=val.get("side", "left"),
+                        typing_speed_ms=val.get("typing_speed_ms", 1000),
+                        emoji_frequency=val.get("emoji_frequency", "medium"),
+                        personality_description=val["personality_description"],
+                        specific_traits=val.get("specific_traits", []),
+                    )
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).warning(f"Failed to load custom personas: {e}")
+    return custom
+
+
+def save_custom_persona(key: str, persona: Persona):
+    """Save a custom persona to the JSON file and register in-memory."""
+    custom_data = {}
+    if CUSTOM_PERSONAS_FILE.exists():
+        try:
+            with open(CUSTOM_PERSONAS_FILE, "r", encoding="utf-8") as f:
+                custom_data = json.load(f)
+        except Exception:
+            pass
+            
+    custom_data[key] = {
+        "name": persona.name,
+        "avatar_color": list(persona.avatar_color),
+        "side": persona.side,
+        "typing_speed_ms": persona.typing_speed_ms,
+        "emoji_frequency": persona.emoji_frequency,
+        "personality_description": persona.personality_description,
+        "specific_traits": persona.specific_traits,
+    }
+    
+    try:
+        CUSTOM_PERSONAS_FILE.parent.mkdir(parents=True, exist_ok=True)
+        with open(CUSTOM_PERSONAS_FILE, "w", encoding="utf-8") as f:
+            json.dump(custom_data, f, indent=4, ensure_ascii=False)
+        PERSONA_PRESETS[key] = persona
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f"Failed to save custom persona: {e}")
+
+
+# Load custom personas initially
+try:
+    for _k, _p in load_custom_personas().items():
+        PERSONA_PRESETS[_k] = _p
+except Exception:
+    pass
+
 
 def get_persona(preset_name: str) -> Persona:
     """
@@ -146,6 +211,9 @@ def build_custom_persona(
     preset_base: Optional[str] = None,
     custom_traits: Optional[List[str]] = None,
     personality_description: Optional[str] = None,
+    avatar_color: Optional[Tuple[int, int, int]] = None,
+    typing_speed_ms: Optional[int] = None,
+    emoji_frequency: Optional[str] = None,
 ) -> Persona:
     """
     Dynamically generates a custom Persona profile.
@@ -156,6 +224,9 @@ def build_custom_persona(
         preset_base: Optional name of the preset to base the persona on.
         custom_traits: List of custom traits to add or merge.
         personality_description: Optional custom core personality text.
+        avatar_color: Optional custom avatar color tuple.
+        typing_speed_ms: Optional typing speed delay.
+        emoji_frequency: Optional emoji frequency.
     """
     if preset_base:
         try:
@@ -174,10 +245,10 @@ def build_custom_persona(
                     traits.append(t_clean)
         return Persona(
             name=name,
-            avatar_color=base.avatar_color,
+            avatar_color=avatar_color or base.avatar_color,
             side=side,
-            typing_speed_ms=base.typing_speed_ms,
-            emoji_frequency=base.emoji_frequency,
+            typing_speed_ms=typing_speed_ms or base.typing_speed_ms,
+            emoji_frequency=emoji_frequency or base.emoji_frequency,
             personality_description=personality_description or base.personality_description,
             specific_traits=traits,
         )
@@ -185,10 +256,10 @@ def build_custom_persona(
         traits = [t.strip() for t in custom_traits if t.strip()] if custom_traits else ["Normal", "Desi"]
         return Persona(
             name=name,
-            avatar_color=(100, 100, 100),  # default grey
+            avatar_color=avatar_color or (100, 100, 100),  # default grey
             side=side,
-            typing_speed_ms=1200,
-            emoji_frequency="medium",
+            typing_speed_ms=typing_speed_ms or 1200,
+            emoji_frequency=emoji_frequency or "medium",
             personality_description=personality_description or f"A custom character named {name}.",
             specific_traits=traits,
         )

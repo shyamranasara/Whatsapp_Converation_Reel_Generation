@@ -254,12 +254,44 @@ with col2:
                 value=", ".join(base_p1.specific_traits),
                 key="p1_custom_traits",
             )
+            
+            # Premium customization controls
+            hex_color_p1 = '#%02x%02x%02x' % base_p1.avatar_color
+            p1_color_hex = st.color_picker("Avatar Color", value=hex_color_p1, key="p1_custom_color")
+            p1_color = tuple(int(p1_color_hex.lstrip('#')[i:i+2], 16) for i in (0, 2, 4))
+            
+            p1_speed = st.slider("Typing Delay (ms)", 400, 4000, value=int(base_p1.typing_speed_ms), step=100, key="p1_custom_speed")
+            p1_emoji = st.selectbox("Emoji Frequency", options=["low", "medium", "high"], index=["low", "medium", "high"].index(base_p1.emoji_frequency), key="p1_custom_emoji")
+            
+            if st.button("💾 Save Character 1 as Preset", key="save_p1_btn"):
+                persona_key = p1_name.lower().strip().replace(" ", "_")
+                if not persona_key:
+                    st.error("Name cannot be empty!")
+                else:
+                    from src.conversation.personas import save_custom_persona, Persona
+                    traits_list = [t.strip() for t in p1_traits_str.split(",") if t.strip()]
+                    new_p = Persona(
+                        name=p1_name,
+                        avatar_color=p1_color,
+                        side="right",
+                        typing_speed_ms=p1_speed,
+                        emoji_frequency=p1_emoji,
+                        personality_description=p1_desc,
+                        specific_traits=traits_list,
+                    )
+                    save_custom_persona(persona_key, new_p)
+                    st.success(f"Character '{p1_name}' saved successfully! You can now select it in presets.")
+                    st.rerun()
+
             p1_config = {
                 "is_custom": True,
                 "name": p1_name,
                 "preset_base": p1_preset_base,
                 "custom_traits": p1_traits_str,
                 "personality_description": p1_desc,
+                "avatar_color": p1_color,
+                "typing_speed_ms": p1_speed,
+                "emoji_frequency": p1_emoji,
             }
         else:
             p1_preset = st.selectbox(
@@ -296,12 +328,44 @@ with col2:
                 value=", ".join(base_p2.specific_traits),
                 key="p2_custom_traits",
             )
+            
+            # Premium customization controls
+            hex_color_p2 = '#%02x%02x%02x' % base_p2.avatar_color
+            p2_color_hex = st.color_picker("Avatar Color", value=hex_color_p2, key="p2_custom_color")
+            p2_color = tuple(int(p2_color_hex.lstrip('#')[i:i+2], 16) for i in (0, 2, 4))
+            
+            p2_speed = st.slider("Typing Delay (ms)", 400, 4000, value=int(base_p2.typing_speed_ms), step=100, key="p2_custom_speed")
+            p2_emoji = st.selectbox("Emoji Frequency", options=["low", "medium", "high"], index=["low", "medium", "high"].index(base_p2.emoji_frequency), key="p2_custom_emoji")
+            
+            if st.button("💾 Save Character 2 as Preset", key="save_p2_btn"):
+                persona_key = p2_name.lower().strip().replace(" ", "_")
+                if not persona_key:
+                    st.error("Name cannot be empty!")
+                else:
+                    from src.conversation.personas import save_custom_persona, Persona
+                    traits_list = [t.strip() for t in p2_traits_str.split(",") if t.strip()]
+                    new_p = Persona(
+                        name=p2_name,
+                        avatar_color=p2_color,
+                        side="left",
+                        typing_speed_ms=p2_speed,
+                        emoji_frequency=p2_emoji,
+                        personality_description=p2_desc,
+                        specific_traits=traits_list,
+                    )
+                    save_custom_persona(persona_key, new_p)
+                    st.success(f"Character '{p2_name}' saved successfully! You can now select it in presets.")
+                    st.rerun()
+
             p2_config = {
                 "is_custom": True,
                 "name": p2_name,
                 "preset_base": p2_preset_base,
                 "custom_traits": p2_traits_str,
                 "personality_description": p2_desc,
+                "avatar_color": p2_color,
+                "typing_speed_ms": p2_speed,
+                "emoji_frequency": p2_emoji,
             }
         else:
             p2_preset = st.selectbox(
